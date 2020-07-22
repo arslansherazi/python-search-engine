@@ -1,0 +1,2 @@
+SUCCESS_STATUS_CODES = [200, 201]
+API_BASE_END_POINT = '/ofd_search'
