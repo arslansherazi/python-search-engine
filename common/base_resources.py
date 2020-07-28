@@ -1,6 +1,7 @@
 import logging
 import os
 
+from flask import request
 from flask_restful import Resource
 from requests import codes
 
@@ -56,28 +57,28 @@ class BaseResource(Resource):
 
     def send_response(self):
         self.response['success'] = True
-        if self.status_code != SUCCESS_STATUS_CODES:
+        if self.status_code not in SUCCESS_STATUS_CODES:
             self.response['success'] = False
         self.response['status_code'] = self.status_code
-        self.response['cmd'] = ''
+        self.response['cmd'] = request.url_rule.rule
         return self.response, self.status_code
 
 
 class BasePostResource(BaseResource):
     def post(self):
-        self.request_flow()
+        return self.request_flow()
 
 
 class BaseGetResource(BaseResource):
     def get(self):
-        self.request_flow()
+        return self.request_flow()
 
 
 class BasePutResource(BaseResource):
     def put(self):
-        self.request_flow()
+        return self.request_flow()
 
 
 class BaseDeleteResource(BaseResource):
     def delete(self):
-        self.request_flow()
+        return self.request_flow()
