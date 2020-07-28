@@ -1,14 +1,14 @@
 from flask import Flask
 from flask_restful import Api
 
-from routing.routing_v100 import RoutingV100
-
 # flask app configurations
+from apis.search.api import Search
+
 app = Flask(__name__)
 api = Api(app)
 
 # routing
-RoutingV100().map_routing()
+api.add_resource(Search, '/ofd_search/v100/search')
 
 
 # run flask app
