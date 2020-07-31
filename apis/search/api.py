@@ -3,7 +3,9 @@ from elasticsearch.client import IndicesClient
 
 from apis.search.validation import search_parser
 from common.base_resources import BasePostResource
+from common.common_helpers import CommonHelpers
 from common.constants import ES_IP, ITEMS_LISTING_PAGE_LIMIT
+from repositories.menu_items_repo import MenuItemsRepository
 
 
 class Search(BasePostResource):
@@ -15,7 +17,13 @@ class Search(BasePostResource):
         """
         Populates request arguments
         """
+        self.query = self.request_args.get('query')
         self.offset = self.request_args.get('offset')
+        self.user_id = self.request_args.get('user_id')
+        self.latitude = self.request_args.get('latitude')
+        self.longitude = self.request_args.get('longitude')
+        self.is_takeaway = bool(self.request_args.get('is_takeaway'))
+        self.is_delivery = bool(self.request_args.get('is_delivery'))
 
     def initialize_class_attributes(self):
         """
@@ -34,7 +42,13 @@ class Search(BasePostResource):
             'size': ITEMS_LISTING_PAGE_LIMIT,
             'from': self.offset,
             'query': {
-                'match_all': {}
+                'match': {
+                    'name': {
+                        'query': self.query.lower(),  # query text will be converted into tokens
+                        'fuzziness': 'AUTO',
+                        'operator': 'or'  # returns documents which includes any token
+                    }
+                }
             }
         }
         self.response = self.es.search(timeout='3s', index=self.index, doc_type='doc', body=self.es_query)
@@ -43,17 +57,29 @@ class Search(BasePostResource):
         """
         Processes elastic search response
         """
+        favourite_menu_items_ids = MenuItemsRepository.get_favourite_menu_items_ids(self.user_id)
         es_menu_items = self.response.get('hits', {}).get('hits', [])
         for es_menu_item in es_menu_items:
             menu_item = es_menu_item.get('_source')
+            if menu_item.get('id') in favourite_menu_items_ids:
+                menu_item['is_favourite'] = True
             self.menu_items.append(menu_item)
+        self.menu_items = MenuItemsRepository.calculate_distance_btw_buyer_and_merchant(
+            self.latitude, self.longitude, self.menu_items, self.is_takeaway, self.is_delivery
+        )
+        if self.is_takeaway:
+            self.menu_items = CommonHelpers.sort_list_data(self.menu_items, key='distance', descending=True)
+        else:
+            self.menu_items = CommonHelpers.sort_list_data(self.menu_items, key='delivery_time', descending=True)
 
     def prepare_response(self):
         """
         Prepares response
         """
         self.response = {
-            'data': self.menu_items
+            'data': {
+                'items': self.menu_items
+            }
         }
 
     def process_request(self):
