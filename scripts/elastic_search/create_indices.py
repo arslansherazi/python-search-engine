@@ -11,7 +11,7 @@ index_meta = {
         'type': 'integer'
     },
     'name': {
-        'type': 'keyword'
+        'type': 'text'
     },
     'price': {
         'type': 'integer'

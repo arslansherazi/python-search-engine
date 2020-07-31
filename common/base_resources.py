@@ -19,8 +19,18 @@ class BaseResource(Resource):
         try:
             self.response = {}
             self.is_send_response = False
-            self.request_args = self.request_parser.parse_args()
-            log_file_path = 'logs/apis/{end_point}'.format(end_point=self.end_point)
+            self.request_args = None
+            try:
+                self.request_args = self.request_parser.parse_args()
+            except Exception as e:
+                self.response = {
+                    'message': '{param}: {message}'.format(
+                        param=list(e.data.get('message').keys())[0], message=list(e.data.get('message').values())[0]
+                    )
+                }
+                self.status_code = codes.BAD_REQUEST
+                return self.send_response()
+            log_file_path = '../../logs/apis/{end_point}'.format(end_point=self.end_point)
             log_file = '{end_point}_v{version}.log'.format(end_point=self.end_point, version=self.version)
             logger = self.get_logger(log_file_path, log_file)
             self.process_request()
@@ -28,11 +38,11 @@ class BaseResource(Resource):
         except Exception as e:
             if logger:
                 logger.exception(str(e))
-                self.status_code = codes.INTERNAL_SERVER_ERROR
-                self.response = {
-                    'message': str(e)
-                }
-                self.send_response()
+            self.status_code = codes.INTERNAL_SERVER_ERROR
+            self.response = {
+                'message': 'Internal Server Error'
+            }
+            return self.send_response()
 
     def get_logger(self, log_file_path, log_file):
         logger = logging.getLogger()
