@@ -1,7 +1,7 @@
 from elasticsearch import Elasticsearch
 from elasticsearch.client import IndicesClient
 
-from apis.search.validation import search_parser
+from apis.v100.search.validation import search_parser
 from common.base_resources import BasePostResource
 from common.common_helpers import CommonHelpers
 from common.constants import ES_IP, ITEMS_LISTING_PAGE_LIMIT
@@ -51,14 +51,14 @@ class Search(BasePostResource):
                 }
             }
         }
-        self.response = self.es.search(timeout='3s', index=self.index, doc_type='doc', body=self.es_query)
+        self.es_response = self.es.search(timeout='3s', index=self.index, doc_type='doc', body=self.es_query)
 
     def process_es_response(self):
         """
         Processes elastic search response
         """
         favourite_menu_items_ids = MenuItemsRepository.get_favourite_menu_items_ids(self.user_id)
-        es_menu_items = self.response.get('hits', {}).get('hits', [])
+        es_menu_items = self.es_response.get('hits', {}).get('hits', [])
         for es_menu_item in es_menu_items:
             menu_item = es_menu_item.get('_source')
             if menu_item.get('id') in favourite_menu_items_ids:

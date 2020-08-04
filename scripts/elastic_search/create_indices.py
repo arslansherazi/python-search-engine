@@ -11,7 +11,16 @@ index_meta = {
         'type': 'integer'
     },
     'name': {
-        'type': 'text'
+        'type': 'text',
+        'fields': {
+            'completion': {
+                'type': 'completion'
+            },
+            'keyword': {
+                'type': 'keyword'
+            }
+        },
+        'analyzer': 'standard'
     },
     'price': {
         'type': 'integer'
