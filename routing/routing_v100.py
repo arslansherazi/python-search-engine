@@ -1,4 +1,4 @@
-from apis.search.api import Search
+from apis.v100.search import Search
 from routing.base_routing import BaseRouting
 
 
