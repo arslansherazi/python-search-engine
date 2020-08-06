@@ -5,6 +5,7 @@ from apis.v100.search.validation import search_parser
 from common.base_resources import BasePostResource
 from common.common_helpers import CommonHelpers
 from common.constants import ES_IP, ITEMS_LISTING_PAGE_LIMIT
+from mongo_models.recent_searches import RecentSearch
 from repositories.menu_items_repo import MenuItemsRepository
 
 
@@ -72,6 +73,16 @@ class Search(BasePostResource):
         else:
             self.menu_items = CommonHelpers.sort_list_data(self.menu_items, key='delivery_time', descending=True)
 
+    def save_recent_search(self):
+        """
+        Saves recent search. It also verifies that either search query is already present in recent searches of user.
+        """
+        is_search_query_already_present = RecentSearch.verify_search_query(
+            self.query, self.user_id, is_delivery=self.is_delivery
+        )
+        if not is_search_query_already_present:
+            RecentSearch.save_search_query(self.query, self.user_id, is_delivery=self.is_delivery)
+
     def prepare_response(self):
         """
         Prepares response
@@ -90,4 +101,5 @@ class Search(BasePostResource):
         self.initialize_class_attributes()
         self.get_menu_items_data()
         self.process_es_response()
+        self.save_recent_search()
         self.prepare_response()
