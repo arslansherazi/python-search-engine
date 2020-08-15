@@ -37,3 +37,9 @@ search_parser.add_argument(
     type=int,
     required=True
 )
+search_parser.add_argument(
+    'is_auto_suggest_items',
+    type=int,
+    required=False,
+    default=False
+)

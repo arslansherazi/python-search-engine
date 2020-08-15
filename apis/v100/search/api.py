@@ -25,6 +25,7 @@ class Search(BasePostResource):
         self.longitude = self.request_args.get('longitude')
         self.is_takeaway = bool(self.request_args.get('is_takeaway'))
         self.is_delivery = bool(self.request_args.get('is_delivery'))
+        self.is_auto_suggest_items = bool(self.request_args.get('is_auto_suggest_items'))
 
     def initialize_class_attributes(self):
         """
@@ -39,19 +40,33 @@ class Search(BasePostResource):
         """
         Gets menu items data
         """
-        self.es_query = {
-            'size': ITEMS_LISTING_PAGE_LIMIT,
-            'from': self.offset,
-            'query': {
-                'match': {
-                    'name': {
-                        'query': self.query.lower(),  # query text will be converted into tokens
-                        'fuzziness': 'AUTO',
-                        'operator': 'or'  # returns documents which includes any token
+        if self.is_auto_suggest_items:
+            self.es_query = {
+                'size': ITEMS_LISTING_PAGE_LIMIT,
+                'from': self.offset,
+                'query': {
+                    'match': {
+                        'name': {
+                            'query': self.query.lower(),
+                            'operator': 'and'
+                        }
                     }
                 }
             }
-        }
+        else:
+            self.es_query = {
+                'size': ITEMS_LISTING_PAGE_LIMIT,
+                'from': self.offset,
+                'query': {
+                    'match': {
+                        'name': {
+                            'query': self.query.lower(),  # query text will be converted into tokens
+                            'fuzziness': 'AUTO',
+                            'operator': 'or'  # returns documents which includes any token
+                        }
+                    }
+                }
+            }
         self.es_response = self.es.search(timeout='3s', index=self.index, doc_type='doc', body=self.es_query)
 
     def process_es_response(self):
