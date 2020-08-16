@@ -107,13 +107,17 @@ mappings.update({
     }
 })
 
-client.create(
-    index='menu_items',
-    body={
-        'mappings': mappings,
-        'settings': {
-            'number_of_shards': 6,
-            'number_of_replicas': 2
-        }
-    }
-)
+
+if __name__ == '__main__':
+    indices = ['takeaway_menu_items', 'delivery_menu_items']
+    for index in indices:
+        client.create(
+            index=index,
+            body={
+                'mappings': mappings,
+                'settings': {
+                    'number_of_shards': 6,
+                    'number_of_replicas': 2
+                }
+            }
+        )

@@ -7,3 +7,13 @@ auto_suggest_parser.add_argument(
     type=str,
     required=True
 )
+auto_suggest_parser.add_argument(
+    'is_takeaway',
+    type=int,
+    required=True
+)
+auto_suggest_parser.add_argument(
+    'is_delivery',
+    type=int,
+    required=True
+)
