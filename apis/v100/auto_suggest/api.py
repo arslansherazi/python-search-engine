@@ -16,6 +16,8 @@ class AutoSuggest(BasePostResource):
         Populates request arguments
         """
         self.query = self.request_args.get('query')
+        self.is_takeaway = bool(self.request_args.get('is_takeaway'))
+        self.is_delivery = bool(self.request_args.get('is_delivery'))
 
     def initialize_class_arguments(self):
         """
@@ -23,7 +25,10 @@ class AutoSuggest(BasePostResource):
         """
         self.es = Elasticsearch([ES_IP])
         self.es_client = IndicesClient(self.es)
-        self.index = 'menu_items'
+        if self.is_takeaway:
+            self.index = 'takeaway_menu_items'
+        else:
+            self.index = 'delivery_menu_items'
         self.menu_items_data = []
 
     def get_suggestions_data(self):
@@ -50,7 +55,7 @@ class AutoSuggest(BasePostResource):
                     }
                 }
             },
-            '_source': ['name']  # used to select specific fields
+            '_source': ['name', 'merchant_info.is_takeaway', 'merchant_info.is_delivery']
         }
         self.es_response = self.es.search(timeout='3s', index=self.index, doc_type='doc', body=es_query)
 

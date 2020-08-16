@@ -33,40 +33,29 @@ class Search(BasePostResource):
         """
         self.es = Elasticsearch([ES_IP])
         self.es_client = IndicesClient(self.es)
-        self.index = 'menu_items'
+        if self.is_takeaway:
+            self.index = 'takeaway_menu_items'
+        else:
+            self.index = 'delivery_menu_items'
         self.menu_items = []
 
     def get_menu_items_data(self):
         """
         Gets menu items data
         """
-        if self.is_auto_suggest_items:
-            self.es_query = {
-                'size': ITEMS_LISTING_PAGE_LIMIT,
-                'from': self.offset,
-                'query': {
-                    'match': {
-                        'name': {
-                            'query': self.query.lower(),
-                            'operator': 'and'
-                        }
+        self.es_query = {
+            'size': ITEMS_LISTING_PAGE_LIMIT,
+            'from': self.offset,
+            'query': {
+                'match': {
+                    'name': {
+                        'query': self.query.lower(),  # query text will be converted into tokens
+                        'fuzziness': 'AUTO',
+                        'operator': 'or'  # returns documents which includes any token
                     }
                 }
             }
-        else:
-            self.es_query = {
-                'size': ITEMS_LISTING_PAGE_LIMIT,
-                'from': self.offset,
-                'query': {
-                    'match': {
-                        'name': {
-                            'query': self.query.lower(),  # query text will be converted into tokens
-                            'fuzziness': 'AUTO',
-                            'operator': 'or'  # returns documents which includes any token
-                        }
-                    }
-                }
-            }
+        }
         self.es_response = self.es.search(timeout='3s', index=self.index, doc_type='doc', body=self.es_query)
 
     def process_es_response(self):
@@ -77,6 +66,8 @@ class Search(BasePostResource):
         es_menu_items = self.es_response.get('hits', {}).get('hits', [])
         for es_menu_item in es_menu_items:
             menu_item = es_menu_item.get('_source')
+            if self.is_auto_suggest_items and menu_item.get('name') != self.query:
+                continue
             if menu_item.get('id') in favourite_menu_items_ids:
                 menu_item['is_favourite'] = True
             self.menu_items.append(menu_item)

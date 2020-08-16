@@ -81,7 +81,10 @@ def put_menu_items_data_into_es_indices(menu_items):
         menu_items_data[menu_item_id]['ingredients'].append(menu_item_ingredient)
 
     for menu_item_id, menu_item_data in menu_items_data.items():
-        es.index(index='menu_items', doc_type='doc', id=menu_item_id, body=menu_item_data)
+        if menu_item_data.get('merchant_info', {}).get('is_takeaway', False):
+            es.index(index='takeaway_menu_items', doc_type='doc', id=menu_item_id, body=menu_item_data)
+        if menu_item_data.get('merchant_info', {}).get('is_delivery', False):
+            es.index(index='delivery_menu_items', doc_type='doc', id=menu_item_id, body=menu_item_data)
 
 
 if __name__ == '__main__':

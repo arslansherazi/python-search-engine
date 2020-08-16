@@ -17,4 +17,6 @@ def delete_index(index_name):
 
 
 if __name__ == '__main__':
-    delete_index('menu_items')
+    indices = ['takeaway_menu_items', 'delivery_menu_items']
+    for index in indices:
+        delete_index(index)
