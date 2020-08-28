@@ -1,6 +1,11 @@
-from app import apis, app
+from flask_mongoengine import MongoEngine
 
-if __name__ == '__main__':
-    app.debug = True
-    app.run(host='0.0.0.0', port=5000)
-    app.run(debug=True)
+from app import app
+
+# mongo db configurations
+app.config['MONGODB_SETTINGS'] = {
+    'db': 'ofd_db',
+    'host': 'localhost',
+    'port': 27017
+}
+mongo_db = MongoEngine(app)
