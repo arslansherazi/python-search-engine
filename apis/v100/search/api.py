@@ -23,9 +23,9 @@ class Search(BasePostResource):
         self.user_id = self.request_args.get('user_id')
         self.latitude = self.request_args.get('latitude')
         self.longitude = self.request_args.get('longitude')
-        self.is_takeaway = bool(self.request_args.get('is_takeaway'))
-        self.is_delivery = bool(self.request_args.get('is_delivery'))
-        self.is_auto_suggest_items = bool(self.request_args.get('is_auto_suggest_items'))
+        self.is_takeaway = self.request_args.get('is_takeaway')
+        self.is_delivery = self.request_args.get('is_delivery')
+        self.is_auto_suggest_items = self.request_args.get('is_auto_suggest_items')
 
     def initialize_class_attributes(self):
         """
