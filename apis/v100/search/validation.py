@@ -1,4 +1,5 @@
 from flask_restful import reqparse
+from flask_restful.inputs import boolean
 
 search_parser = reqparse.RequestParser()
 
@@ -29,17 +30,17 @@ search_parser.add_argument(
 )
 search_parser.add_argument(
     'is_takeaway',
-    type=int,
+    type=boolean,
     required=True
 )
 search_parser.add_argument(
     'is_delivery',
-    type=int,
+    type=boolean,
     required=True
 )
 search_parser.add_argument(
     'is_auto_suggest_items',
-    type=int,
+    type=boolean,
     required=False,
     default=False
 )

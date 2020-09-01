@@ -16,8 +16,8 @@ class AutoSuggest(BasePostResource):
         Populates request arguments
         """
         self.query = self.request_args.get('query')
-        self.is_takeaway = bool(self.request_args.get('is_takeaway'))
-        self.is_delivery = bool(self.request_args.get('is_delivery'))
+        self.is_takeaway = self.request_args.get('is_takeaway')
+        self.is_delivery = self.request_args.get('is_delivery')
 
     def initialize_class_arguments(self):
         """
