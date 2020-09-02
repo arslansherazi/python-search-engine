@@ -15,6 +15,7 @@ def create_app():
         add_routing()
         app.config.from_envvar('APPLICATION_SETTINGS')
         mongo_db = MongoEngine(app)
+        from security.middlewares import basic_authentication
     return app
 
 
