@@ -1,15 +1,26 @@
-from flask import Response, request
+import json
 
-from app import app
-from security.security_credentials import BASIC_AUTH_PASSWORD
+from flask import Response, current_app, request
+
+from security.security_credentials import (BASIC_AUTH_PASSWORD,
+                                           BASIC_AUTH_USERNAME)
 
 
-@app.before_request
+@current_app.before_request
 def basic_authentication():
-    header_authorized_key = request.headers.environ['HTTP_HEADER_AUTHORIZED_KEY']
-    if header_authorized_key != BASIC_AUTH_PASSWORD:
-        response = Response()
-        response.data = str.encode('Unauthorized Access')
-        response._status = '401 OK'
-        response._status_code = 401
-        return response
+    if request.authorization:
+        if (
+                request.authorization.username == BASIC_AUTH_USERNAME and
+                request.authorization.password == BASIC_AUTH_PASSWORD
+        ):
+            return
+    response = Response()
+    response.mimetype = 'application/json'
+    response.data = json.dumps({
+        'message': 'Unauthorized Access',
+        'status_code': 401,
+        'success': False
+    })
+    response._status = '401 OK'
+    response._status_code = 401
+    return response
